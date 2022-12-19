@@ -22,10 +22,11 @@ update::update(config* cfg, QWidget* parent) : QDialog(parent),
 update::~update() {
 }
 
-void update::setText(QString curr, QString latest) {
+void update::setText(QString curr, QString latest, QString url) {
 	QString str = m_ui->label->text();
 	str.replace("%curr%", curr);
 	str.replace("%lat%", latest);
+	str.replace("%url%", url);
 	m_ui->label->setText(str);
 }
 

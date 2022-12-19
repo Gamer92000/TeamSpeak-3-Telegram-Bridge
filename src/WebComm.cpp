@@ -1,18 +1,26 @@
 #pragma comment (lib, "Qt5Core")
 
-#include "WebComm.h"
 #include <iostream>
+#include <chrono>
+#include <thread>
+#include <sstream>
+
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
 #include <QtCore/QEventLoop>
 #include <QtCore/QTextCodec>
-#include "definitions.h"
+
 #include "teamspeak/public_errors.h"
-#include <chrono>
-#include <thread>
-#include <sstream>
-#include <Windows.h>
+
+#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
+#include <windows.h>
+#include <winsock.h>
+#endif
+
+#include "WebComm.h"
+#include "definitions.h"
+#include "helper.hpp"
 
 Communicator::Communicator(QObject* parent) :
     QObject(parent)
@@ -37,19 +45,29 @@ void Communicator::setFunctionPtr(TS3Functions* functions)
 void Communicator::sendGreetings()
 {
     std::ostringstream greetings;
-    greetings << "Telegram Bridge\nwas successfully initiated!";
+    greetings << "```\nTelegram Bridge was successfully initiated!\n```\n";
     #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
-    TCHAR infoBuf[100];
-    DWORD bufCharCount = 100;
+    TCHAR  infoBuf[100];
+    DWORD  bufCharCount = 100;
     if (GetComputerName(infoBuf, &bufCharCount))
     {
-        char szString[100];
-        size_t nNumCharConverted;
-        wcstombs_s(&nNumCharConverted, szString, 100, (wchar_t*)infoBuf, 100);
-        greetings << "\n   Host System: " << szString;
+        greetings << "Host System: `" << infoBuf << "`";
+    }
+    else
+    {
+        greetings << "Host System: `" << "Unknown" << "`";
     }
     #endif
-    sendMessage(greetings.str().c_str(), "", 0, false);
+
+    std::string str = telegramEscape(greetings.str().c_str());
+    std::string::size_type n = 0;
+    while ((n = str.find("\n", n)) != std::string::npos)
+    {
+        str.replace(n, 1, "%0A");
+        n += 3;
+    }
+
+    sendMessage(str.c_str(), "", 0, false);
 }
 
 void Communicator::sendMessage(const char* message, const char* uuid, uint64 serverConnectionHandlerID, bool save)
@@ -58,8 +76,7 @@ void Communicator::sendMessage(const char* message, const char* uuid, uint64 ser
     std::ostringstream request;
     if (conf->getConfigOption("integratedBot").toBool()) request << "https://telegrambridgebot.julianimhof.de";
     else request << "https://api.telegram.org/bot" << qPrintable(conf->getConfigOption("botToken").toString().trimmed());
-
-    request << "/sendMessage?parse_mode=HTML&chat_id=" << qPrintable(conf->getConfigOption("chatID").toString().trimmed()) << "&text=" << qPrintable(QUrl::toPercentEncoding(message, "", "lgtamp&"));
+    request << "/sendMessage?parse_mode=MarkdownV2&chat_id=" << qPrintable(conf->getConfigOption("chatID").toString().trimmed()) << "&text=" << message;
     this->startRequest(request.str().c_str(), std::string(uuid), serverConnectionHandlerID, true);
     last = std::time(nullptr);
 }
@@ -91,8 +108,8 @@ void Communicator::readThread()
             offset = update["update_id"].toInt();
             QJsonObject message = update["message"].toObject();
             if (message["reply_to_message"].isUndefined()) continue;
-            QJsonObject resopnse = message["reply_to_message"].toObject();
-            int msg_id = resopnse["message_id"].toInt();
+            QJsonObject response = message["reply_to_message"].toObject();
+            int msg_id = response["message_id"].toInt();
             if (!messages->contains(msg_id)) continue;
             char* msg = (char*) message["text"].toString().toLocal8Bit().constData();
             if (!running) break;
@@ -148,7 +165,7 @@ void Communicator::checkForUpdate(update* upd)
         QString downloadLink = data["html_url"].toString().trimmed();
 
         ts3Functions->logMessage(("TBridge: New version found! Download at " + downloadLink.toStdString()).c_str(), LogLevel_INFO, "PLUGIN", NULL);
-        upd->setText(PLUGIN_VERSION, version);
+        upd->setText(PLUGIN_VERSION, version, downloadLink);
         upd->show();
     });
 }

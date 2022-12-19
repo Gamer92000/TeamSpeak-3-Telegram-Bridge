@@ -1,5 +1,10 @@
+#pragma once
+
 #include <iostream>
 #include "definitions.h"
+#include "bbcode.hpp"
+
+// -------------------------- TeamSpeak Internal --------------------------
 
 #ifdef _WIN32
 #define _strcpy(dest, destSize, src) strcpy_s(dest, destSize, src)
@@ -33,22 +38,57 @@ static struct PluginMenuItem *createMenuItem(enum PluginMenuType type, int id, c
 	(*menuItems)[n++] = NULL; \
 	assert(n == sz);
 
+// -------------------------- Custom --------------------------
 
-/* Helper function to create a hotkey */
-// static struct PluginHotkey *createHotkey(const char *keyword, const char *description)
-// {
-// 	struct PluginHotkey *hotkey = (struct PluginHotkey *)malloc(sizeof(struct PluginHotkey));
-// 	_strcpy(hotkey->keyword, PLUGIN_HOTKEY_BUFSZ, keyword);
-// 	_strcpy(hotkey->description, PLUGIN_HOTKEY_BUFSZ, description);
-// 	return hotkey;
-// }
+enum MessageType
+{
+	MESSAGE_POKE = 0,
+	MESSAGE_PRIVATE = 1,
+	MESSAGE_CHANNEL = 2,
+	MESSAGE_SERVER = 3
+};
 
-// /* Some makros to make the code to create hotkeys a bit more readable */
-// #define BEGIN_CREATE_HOTKEYS(x) \
-// 	const size_t sz = x + 1;      \
-// 	size_t n = 0;                 \
-// 	*hotkeys = (struct PluginHotkey **)malloc(sizeof(struct PluginHotkey *) * sz);
-// #define CREATE_HOTKEY(a, b) (*hotkeys)[n++] = createHotkey(a, b);
-// #define END_CREATE_HOTKEYS \
-// 	(*hotkeys)[n++] = NULL;  \
-// 	assert(n == sz);
+static std::string prepareMessage(MessageType type, const char *source, const char *message)
+{
+	std::string msg = "```%0A";
+
+	switch (type)
+	{
+	case MESSAGE_POKE:
+		msg += "You were poked";
+		break;
+	case MESSAGE_PRIVATE:
+		msg += "You received a private message";
+		break;
+	case MESSAGE_CHANNEL:
+		msg += "You received a channel message";
+		break;
+	case MESSAGE_SERVER:
+		msg += "You received a server message";
+		break;
+	default:
+		// Should never happen
+		msg += "You received a message";
+		break;
+	}
+
+	msg += "%0A```%0A*_" + std::string(source) + "_*%0A" + parseBbcode(message);
+
+	// url encode ? and & to avoid problems with the query string
+
+	size_t pos = 0;
+	while ((pos = msg.find("?", pos)) != std::string::npos)
+	{
+		msg.replace(pos, 1, "%3F");
+		pos += 3;
+	}
+
+	pos = 0;
+	while ((pos = msg.find("&", pos)) != std::string::npos)
+	{
+		msg.replace(pos, 1, "%26");
+		pos += 3;
+	}
+
+	return msg;
+}

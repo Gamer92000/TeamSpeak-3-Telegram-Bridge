@@ -18,7 +18,7 @@ public:
 	~update();
 	update(const update&) = delete;
 	update& operator=(const update&) = delete;
-	void setText(QString, QString);
+	void setText(QString, QString, QString);
 
 protected:
 	void showEvent(QShowEvent* e) override;

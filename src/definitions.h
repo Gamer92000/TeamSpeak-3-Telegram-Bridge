@@ -8,7 +8,7 @@
 #define PLUGIN_NAME "Telegram Bridge"
 #define PLUGIN_VERSION "<version>"
 #define PLUGIN_AUTHOR "JUL14N"
-#define PLUGIN_DESCRIPTION "This plugin adds Telegram - Teamspeak cross communication.";
+#define PLUGIN_DESCRIPTION "This plugin adds Telegram - TeamSpeak cross communication.";
 
 #define UPDATE_URL "https://api.github.com/repos/Gamer92000/TeamSpeak-3-Telegram-Bridge/releases/latest"
 

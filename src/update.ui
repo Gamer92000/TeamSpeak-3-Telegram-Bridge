@@ -52,7 +52,7 @@
        </font>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;A new Version for Telegram Bridge was found!&lt;br/&gt;Download the latest release &lt;a href=&quot;https://julianimhof.de/files/_TelegramBridge.ts3_plugin&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;here&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Current Version: &lt;span style=&quot; font-weight:600;&quot;&gt;%curr%&lt;/span&gt;&lt;br/&gt;Latest Version: &lt;span style=&quot; font-weight:600;&quot;&gt;%lat%&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;A new Version for Telegram Bridge was found!&lt;br/&gt;Download the latest release &lt;a href=&quot;%url%&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;here&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Current Version: &lt;span style=&quot; font-weight:600;&quot;&gt;%curr%&lt;/span&gt;&lt;br/&gt;Latest Version: &lt;span style=&quot; font-weight:600;&quot;&gt;%lat%&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="textFormat">
        <enum>Qt::RichText</enum>

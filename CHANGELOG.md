@@ -1,3 +1,10 @@
+###### 2022-12-20 _v3.4.1_
+```
+🐛 Fix displayed update download URL
+✨ Add minimal BBCode support
+♻️ Rework Telegram message template
+```
+
 ###### 2022-12-19 _v3.4_
 ```
 ⬆️ Switch to Qt Version 5.15.2  

@@ -1,6 +1,5 @@
 #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
 #pragma warning(disable : 4100) /* Disable Unreferenced parameter warning */
-#include <Windows.h>
 #endif
 
 #include <stdio.h>
@@ -243,18 +242,15 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		configObject->getConfigOption("serverAlways").toBool()) &&
 		configObject->getConfigOption("serverEnabled").toBool()))
 	{
-		std::ostringstream str;
-		str << "<i>" << fromName << "</i> send a message to";
+		MessageType type = MessageType::MESSAGE_SERVER;
 		if (targetMode == TextMessageTarget_CLIENT)
-			str << " you: <pre>";
-		else if(targetMode == TextMessageTarget_CHANNEL)
-			str << " your channel: <pre>";
-		else
-			str << " the server: <pre>";
-			
-		str << qPrintable(QString(message).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")) << "</pre>";
+			type = MessageType::MESSAGE_PRIVATE;
+		else if (targetMode == TextMessageTarget_CHANNEL)
+			type = MessageType::MESSAGE_CHANNEL;
 
-		comm->sendMessage(str.str().c_str(), fromUniqueIdentifier, serverConnectionHandlerID, true);
+		auto msg = prepareMessage(type, fromName, message);
+
+		comm->sendMessage(msg.c_str(), fromUniqueIdentifier, serverConnectionHandlerID, true);
 	}
 
 	return 0;
@@ -295,15 +291,8 @@ int ts3plugin_onClientPokeEvent(
 		configObject->getConfigOption("pokeAlways").toBool())
 	{
 
-		std::ostringstream str;
-		str << "<i>" << pokerName << "</i> poked you";
-		if (!strcmp(message, "") == 0)
-		{
-			str << " with the message: <pre>" << QString(message).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").toStdString().c_str() << "</pre>";
-		}
-		else str << "!";
-
-		comm->sendMessage(str.str().c_str(), pokerUniqueIdentity, serverConnectionHandlerID, true);
+		auto msg = prepareMessage(MessageType::MESSAGE_POKE, pokerName, message);
+		comm->sendMessage(msg.c_str(), pokerUniqueIdentity, serverConnectionHandlerID, true);
 	}
 	
 	return 0; 
