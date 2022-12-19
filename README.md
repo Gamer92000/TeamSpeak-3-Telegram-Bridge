@@ -59,7 +59,7 @@ This plugin is not supported by TeamSpeak Systems GmbH. It is provided as-is and
 <!-- Bugs and Feature Requests -->
 ## 🐛 Bugs and Feature Requests
 
-If you encounter any bugs or have a feature request, feel free to open an [issue](issues/new). Please make sure to include as much information as possible. This includes the version of the plugin you are using, the version of the TeamSpeak 3 client you are using and the operating system you are using.
+If you encounter any bugs or have a feature request, feel free to open an [issue](https://github.com/Gamer92000/TeamSpeak-3-Telegram-Bridge/issues/new). Please make sure to include as much information as possible. This includes the version of the plugin you are using, the version of the TeamSpeak 3 client you are using and the operating system you are using.
 
 ## 📝 Contributing
 
