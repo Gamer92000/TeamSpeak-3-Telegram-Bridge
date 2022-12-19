@@ -1,0 +1,121 @@
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Version In deploy/package.ini and src/definitions.h
+        # Version is the tag name without the v
+        run: |
+          sed -i "s/<version>/$(echo ${GITHUB_REF#refs/tags/v})/g" deploy/package.ini
+          sed -i "s/<version>/$(echo ${GITHUB_REF#refs/tags/v})/g" src/definitions.h
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: prebuild
+          path: |
+            deploy/package.ini
+            src/definitions.h
+  
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: 
+          - windows-2019
+        arch:
+          - x64
+          - x86
+      max-parallel: 3
+    runs-on: ${{ matrix.os }}
+    needs: prebuild
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Download prebuild
+        uses: actions/download-artifact@v3
+        with:
+          name: prebuild
+          path: .
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+          toolset: 14.0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          architecture: ${{ matrix.arch }}
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: ${{ matrix.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' }}
+          dir: '${{ github.workspace }}'
+          cache: true
+          cache-key-prefix: ${{ runner.os }}
+          setup-python: 'false'
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.13
+      - name: Build
+        run: |
+          cmake -A ${{ matrix.arch == 'x64' && 'x64' || 'Win32' }} .
+          cmake --build . --config Release
+      - name: Rename release (Windows)
+        if: matrix.os == 'windows-2019'
+        run: |
+          mv Release/TelegramBridge.dll TelegramBridge_win${{ matrix.arch == 'x64' && '64' || '32' }}.dll
+      - name: Archive production artifacts (Windows)
+        if: matrix.os == 'windows-2019'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}${{ matrix.arch }}
+          path: TelegramBridge_win${{ matrix.arch == 'x64' && '64' || '32' }}.dll
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download prebuild
+        uses: actions/download-artifact@v3
+        with:
+          name: prebuild
+          path: .
+      - name: Remove old artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: prebuild
+      - name: Create Tmp Folder
+        run: |
+          mkdir -p tmp
+      - name: Collect artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: tmp
+      - name: Move artifacts to release
+        run: |
+          mv tmp/**/* deploy/plugins/
+      - name: Install zip
+        uses: montudor/action-zip@v1
+      - name: Zip output
+        run: zip -qq -r ../TelegramBridge.zip .
+        working-directory: deploy
+      - name: Rename release
+        run: |
+          mv TelegramBridge.zip TelegramBridge.${{ github.ref_name }}.ts3_plugin
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./TelegramBridge.${{ github.ref_name }}.ts3_plugin
+          draft: false
+          prerelease: false

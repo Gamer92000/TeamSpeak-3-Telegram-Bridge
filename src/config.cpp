@@ -1,9 +1,9 @@
 #include "config.h"
-#include "ui_configui.h"
+#include "ui_config.h"
 
 config::config(const QString& configLocation, QWidget* parent /* = nullptr */) : QDialog(parent),
 	m_ui(std::make_unique<Ui::configui>()),
-	m_settings(std::make_unique<QSettings>(configLocation + "/TelegramBridge.ini", QSettings::IniFormat, this))
+	m_settings(std::make_unique<QSettings>(configLocation, QSettings::IniFormat, this))
 {
 	m_ui->setupUi(this);
 

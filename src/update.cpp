@@ -1,5 +1,5 @@
 #include "update.h"
-#include "ui_updateui.h"
+#include "ui_update.h"
 
 update::update(config* cfg, QWidget* parent) : QDialog(parent),
 	m_ui(std::make_unique<Ui::updateui>()) 

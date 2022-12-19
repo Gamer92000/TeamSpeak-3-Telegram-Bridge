@@ -34,17 +34,21 @@ void Communicator::setFunctionPtr(TS3Functions* functions)
     ts3Functions = functions;
 }
 
-void Communicator::sendGreetings() {
+void Communicator::sendGreetings()
+{
     std::ostringstream greetings;
-    greetings << "Telegram Bridge\nwas succesfully initiated!";
+    greetings << "Telegram Bridge\nwas successfully initiated!";
+    #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
     TCHAR infoBuf[100];
     DWORD bufCharCount = 100;
-    if (GetComputerName(infoBuf, &bufCharCount)) {
+    if (GetComputerName(infoBuf, &bufCharCount))
+    {
         char szString[100];
         size_t nNumCharConverted;
-        wcstombs_s(&nNumCharConverted, szString, 100, infoBuf, 100);
+        wcstombs_s(&nNumCharConverted, szString, 100, (wchar_t*)infoBuf, 100);
         greetings << "\n   Host System: " << szString;
     }
+    #endif
     sendMessage(greetings.str().c_str(), "", 0, false);
 }
 
@@ -111,16 +115,40 @@ void Communicator::setAnyID(anyID id)
     ID = id;
 }
 
-void Communicator::checkForUpdate(update* upd) {
+void Communicator::checkForUpdate(update* upd)
+{
     manager = new QNetworkAccessManager();
     QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(UPDATE_URL)));
     connect(reply, &QNetworkReply::finished, [=]() {
-        if (reply->error() != QNetworkReply::NoError) { ts3Functions->logMessage("TBridge: Unable to pull version information.", LogLevel_WARNING, "PLUGIN", NULL); return; }
-        std::ostringstream response;
-        response << reply->readAll().constData();
-        if (!QString::compare(QString(response.str().c_str()).trimmed(), PLUGIN_VERSION)) { ts3Functions->logMessage("TBridge: No Update found!", LogLevel_INFO, "PLUGIN", NULL); return; }
-        ts3Functions->logMessage("TBridge: New version found! Download at https://julianimhof.de/files/_TelegramBridge.ts3plugin", LogLevel_INFO, "PLUGIN", NULL);
-        upd->setText(PLUGIN_VERSION, response.str().c_str());
+        if (reply->error() != QNetworkReply::NoError)
+        {
+            ts3Functions->logMessage("TBridge: Unable to pull version information.", LogLevel_WARNING, "PLUGIN", NULL);
+            return;
+        }
+        
+        QJsonParseError jsonError;
+        QJsonDocument document = QJsonDocument::fromJson( reply->readAll(), &jsonError );
+        if (jsonError.error != QJsonParseError::NoError)
+        {
+            ts3Functions->logMessage("TBridge: Unable to pull version information.", LogLevel_WARNING, "PLUGIN", NULL);
+            return;
+        }
+
+        QJsonObject data = document.object();
+
+        QString version = data["tag_name"].toString().trimmed();
+        // remove v from version
+        version.remove(0, 1);
+        if (!QString::compare(version, PLUGIN_VERSION))
+        {
+            ts3Functions->logMessage("TBridge: No Update found!", LogLevel_INFO, "PLUGIN", NULL);
+            return;
+        }
+
+        QString downloadLink = data["html_url"].toString().trimmed();
+
+        ts3Functions->logMessage(("TBridge: New version found! Download at " + downloadLink.toStdString()).c_str(), LogLevel_INFO, "PLUGIN", NULL);
+        upd->setText(PLUGIN_VERSION, version);
         upd->show();
     });
 }
@@ -129,7 +157,8 @@ void Communicator::startRequest(const char* requestedUrl, std::string uuid, uint
 {
     manager = new QNetworkAccessManager();
     QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(requestedUrl)));
-    connect(reply, &QNetworkReply::finished, [=]() {
+    connect(reply, &QNetworkReply::finished, [=]()
+    {
         std::ostringstream response;
         response << reply->readAll().constData();
         QJsonDocument document = QJsonDocument::fromJson(response.str().c_str());
@@ -137,7 +166,9 @@ void Communicator::startRequest(const char* requestedUrl, std::string uuid, uint
         QJsonObject resp = data["result"].toObject();
         int id = resp["message_id"].toInt();
         if(strcmp(uuid.c_str(), "") != 0 && save && id != 0)
-        messages->insert(id, QPair<std::string, int>(uuid, serverConnectionHandlerID));
+        {
+            messages->insert(id, QPair<std::string, int>(uuid, serverConnectionHandlerID));
+        }
         reply->deleteLater();
     });
 }
