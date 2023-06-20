@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+permissions:
+  contents: write
 
 jobs:
   prebuild:
@@ -84,7 +86,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.1.0
       - name: Download prebuild
         uses: actions/download-artifact@v3
         with:
@@ -113,7 +115,7 @@ jobs:
         run: |
           mv TelegramBridge.zip TelegramBridge.${{ github.ref_name }}.ts3_plugin
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v0.1.15
         with:
           files: |
             ./TelegramBridge.${{ github.ref_name }}.ts3_plugin
