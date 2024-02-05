@@ -1,2 +1,6 @@
 build
 .vscode
+.vs
+
+CMakePresets.json
+CMakeUserPresets.json

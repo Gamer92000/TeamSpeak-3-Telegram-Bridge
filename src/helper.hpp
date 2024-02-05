@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QUrl>
 #include <iostream>
 #include "definitions.h"
 #include "bbcode.hpp"
@@ -50,7 +51,7 @@ enum MessageType
 
 static std::string prepareMessage(MessageType type, const char *source, const char *message)
 {
-	std::string msg = "```%0A";
+	std::string msg = "`";
 
 	switch (type)
 	{
@@ -72,23 +73,8 @@ static std::string prepareMessage(MessageType type, const char *source, const ch
 		break;
 	}
 
-	msg += "%0A```%0A*_" + std::string(source) + "_*%0A" + parseBbcode(message);
+	msg += "`\n*_" + std::string(telegramEscape(source)) + "_*\n" + parseBbcode(message);
 
-	// url encode ? and & to avoid problems with the query string
-
-	size_t pos = 0;
-	while ((pos = msg.find("?", pos)) != std::string::npos)
-	{
-		msg.replace(pos, 1, "%3F");
-		pos += 3;
-	}
-
-	pos = 0;
-	while ((pos = msg.find("&", pos)) != std::string::npos)
-	{
-		msg.replace(pos, 1, "%26");
-		pos += 3;
-	}
-
-	return msg;
+	QByteArray encoded = QUrl::toPercentEncoding(QString::fromStdString( msg ), "", "");
+	return encoded.toStdString();
 }
