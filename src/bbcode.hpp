@@ -16,7 +16,7 @@ static void findAndReplaceAll(std::string& str, const std::string& from, const s
 static std::string telegramEscape(const char *message) {
 	std::string msg = std::string(message);
 	// removed from escape: [, ], `, _, *
-	auto escapeChars = { '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' };
+	auto escapeChars = { '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '_' };
 	for (auto c : escapeChars) {
 		findAndReplaceAll(msg, std::string(1, c), std::string(1, '\\') + c);
 	}
