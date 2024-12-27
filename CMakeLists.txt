@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-project("TelegramBridge")
-
 set(CMAKE_CXX_STANDARD 20)
 
 set(QT_VERSION 5)
@@ -38,14 +36,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-message("Looking for Qt...")
+# Don't touch this, it will be set by the build script
+project("<plugin_name>")
 
-#if(${QT_VERSION} EQUAL 5)
-#    list(APPEND CMAKE_PREFIX_PATH "H:/Qt/5.15.2/msvc2019_64")
-#else()
-#    list(APPEND CMAKE_PREFIX_PATH "H:/Qt/6.6.0/msvc2019_64")
-#    add_definitions(-DQT_ADDITIONAL_PACKAGES_PREFIX_PATH="H:/Qt/6.6.0/msvc2019_64")
-#endif()
+message("Looking for Qt...")
 
 find_package(Qt${QT_VERSION} REQUIRED Widgets Network)
 
