@@ -75,7 +75,7 @@ jobs:
         with:
           version: '5.12.3'
           target: 'desktop'
-          arch: ${{ matrix.os == 'windows-2019' && (matrix.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' ) || (matrix.os == 'ubuntu-latest' && 'gcc_64' || 'clang_64') }}
+          arch: ${{ matrix.os == 'windows-2019' && (matrix.arch == 'x64' && 'win64_msvc2017_64' || 'win32_msvc2017' ) || (matrix.os == 'ubuntu-latest' && 'gcc_64' || 'clang_64') }}
           dir: '${{ github.workspace }}'
           cache: true
           cache-key-prefix: ${{ runner.os }}-${{ matrix.arch }}-Qt
