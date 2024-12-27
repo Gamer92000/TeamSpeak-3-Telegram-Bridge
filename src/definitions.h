@@ -1,6 +1,6 @@
 #pragma once
 
-#define PLUGIN_API_VERSION 26
+#define PLUGIN_API_VERSION 25
 
 // this needs to be unique for each plugin
 #define CONFIG_FILE "TelegramBridge.ini"
